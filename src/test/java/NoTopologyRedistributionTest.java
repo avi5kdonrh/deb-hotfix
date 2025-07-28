@@ -95,8 +95,8 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
       server2 = createServer(false, config2);
       server2.getConfiguration().addAddressSetting("#", addressSettings);
       server2.getConfiguration().addClusterConfiguration(clusterConnectionConfiguration);
-      server1.getConfiguration().setClusterUser("admin");
-      server1.getConfiguration().setClusterPassword("admin");
+      server2.getConfiguration().setClusterUser("admin");
+      server2.getConfiguration().setClusterPassword("admin");
       server2.start();
 
 
@@ -121,7 +121,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
 
       Thread.sleep(5000);
       //TODO if you uncomment the following line, the async consumer will receive the message
-      //System.out.println(session.createConsumer(session.createQueue(fqqn)).receive(1));
+      System.out.println(session.createConsumer(session.createQueue(fqqn)).receive(1));
       boolean result = countDownLatch.await(5, TimeUnit.SECONDS);
       assertTrue(result);
       server1.stop();
