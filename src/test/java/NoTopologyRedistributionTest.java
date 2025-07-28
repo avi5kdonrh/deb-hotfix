@@ -62,7 +62,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
               setName("my-cluster").setAddress(address).setConnectorName("local").
               setInitialConnectAttempts(10).
               setRetryInterval(100).setDuplicateDetection(true).setMaxHops(1).
-              setProducerWindowSize(0).setMessageLoadBalancingType(MessageLoadBalancingType.OFF_WITH_REDISTRIBUTION).
+              setProducerWindowSize(0).setMessageLoadBalancingType(MessageLoadBalancingType.ON_DEMAND).
               setStaticConnectors(List.of("remote"));
 
 
@@ -126,6 +126,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
       assertTrue(result);
       server1.stop();
       server2.stop();
+      super.tearDown();
 
       }
 
