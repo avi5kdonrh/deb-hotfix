@@ -121,7 +121,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
 
       Thread.sleep(5000);
       //TODO if you uncomment the following line, the async consumer will receive the message
-      System.out.println(session.createConsumer(session.createQueue(fqqn)).receive(1));
+     // System.out.println(session.createConsumer(session.createQueue(fqqn)).receive(1));
       boolean result = countDownLatch.await(5, TimeUnit.SECONDS);
       assertTrue(result);
       server1.stop();
