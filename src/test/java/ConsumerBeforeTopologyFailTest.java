@@ -1,5 +1,6 @@
 import javax.jms.*;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.cli.Artemis;
 import org.apache.activemq.artemis.cli.commands.ActionContext;
 import org.apache.activemq.artemis.cli.commands.address.CreateAddress;
 import org.apache.activemq.artemis.cli.commands.queue.CreateQueue;
@@ -62,6 +63,9 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       map2.put("host", "localhost");
       map2.put("port", 61617);
 
+      String url1 = "tcp://localhost:61616";
+      String url2 = "tcp://localhost:61617";
+
       ClusterConnectionConfiguration clusterConnectionConfiguration = new ClusterConnectionConfiguration().
               setName("my-cluster").setAddress(address).setConnectorName("local").
               setInitialConnectAttempts(10).
@@ -89,15 +93,22 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       server1.getConfiguration().setClusterPassword("admin");
       server1.start();
 
-      createQueue("tcp://localhost:61616");
+      createQueue(url1);
+      System.out.println(">>>> QUEUE STAT AFTER CREATING QUEUE >>>");
+      stats(url1);
 
       Thread.sleep(1000);
-      ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-      Connection connection = activeMQConnectionFactory.createConnection();
-      connection.start();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
+
+         ActiveMQConnectionFactory factoryBroker1 = new ActiveMQConnectionFactory(url1);
+         Connection connectionBroker1 = factoryBroker1.createConnection();
+         connectionBroker1.start();
+         Session sessionBroker1 = connectionBroker1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sessionBroker1.createConsumer(sessionBroker1.createQueue(fqqn)).setMessageListener(this);
+
+
       System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
+      System.out.println(">>>> QUEUE STAT AFTER CREATING ASYNC CONSUMER >>>");
+      stats(url1);
 
       ConfigurationImpl config2 =  createBasicConfig(0);
       config2.getConnectorConfigurations().put("remote", new TransportConfiguration(NETTY_CONNECTOR_FACTORY,map));
@@ -112,16 +123,22 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       server2.getConfiguration().setClusterPassword("admin");
       server2.start();
 
-      createQueue("tcp://localhost:61617");
+      createQueue(url2);
+      System.out.println(">>>> QUEUE STAT AFTER CREATING QUEUE ON ANOTHER NODE >>>");
+      stats(url2);
 
-      ConnectionFactory factory1 = CFUtil.createConnectionFactory("core", "tcp://localhost:61617");
-      try (Connection connection1 = factory1.createConnection()) {
-         connection1.start();
-         Session session1= connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Destination jmsQueue = session1.createQueue(fqqn);
-         session1.createProducer(jmsQueue).send(session1.createTextMessage("test"));
-         System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
-      }
+
+     ActiveMQConnectionFactory factoryBroker2 = new ActiveMQConnectionFactory(url2);
+         Connection connectionBroker2 = factoryBroker2.createConnection();
+           connectionBroker2.start();
+           Session sessionBroker2 = connectionBroker2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           Destination jmsQueue = sessionBroker2.createQueue(fqqn);
+           sessionBroker2.createProducer(jmsQueue).send(sessionBroker2.createTextMessage("test"));
+           System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
+
+      System.out.println(">>>> QUEUE STAT AFTER SENDING MESSAGE ON ANOTHER NODE >>>");
+     stats(url2);
+
 
       Thread.sleep(5000);
       //TODO if you uncomment the following line, the async consumer will receive the message
@@ -141,25 +158,21 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
    }
 
    private void createQueue(String url) throws Exception {
-      ActionContext actionContext = new ActionContext();
-
-      CreateAddress createAddress = new CreateAddress();
-      createAddress.setAnycast(true);
-      createAddress.setName(address);
-      createAddress.setBrokerURL(url);
-      createAddress.execute(actionContext);
-
-      CreateQueue createQueue = new CreateQueue();
-      createQueue.setAddress(address);
-      createQueue.setName(queue);
-      createQueue.setAnycast(true);
-      createQueue.setPreserveOnNoConsumers(true);
-      createQueue.setBrokerURL(url);
-      createQueue.execute(actionContext);
-
-      StatQueue statQueue = new StatQueue();
-      statQueue.setBrokerURL(url);
-      statQueue.setQueueName(queue);
-      statQueue.execute(actionContext);
+      Artemis.buildCommand(true, true, true)
+              .execute("queue", "create", "--url="+url,
+                      "--name="+queue,
+                      "--address="+address,
+                      "--anycast",
+                      "--durable",
+                      "--purge-on-no-consumers=false",
+                      "--auto-create-address=true");
    }
+
+   private void stats(String url) throws Exception {
+      Artemis.buildCommand(true, true, true)
+              .execute("queue", "stat", "--url="+url,
+                      "--clustered",
+                      "--queueName="+queue);
+   }
+
 }
