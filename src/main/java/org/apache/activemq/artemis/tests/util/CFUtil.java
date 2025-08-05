@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.activemq.artemis.tests.util;
-import jakarta.jms.ConnectionFactory;
+import javax.jms.ConnectionFactory;
 
 
 public class CFUtil {

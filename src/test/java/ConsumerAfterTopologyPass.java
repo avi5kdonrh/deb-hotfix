@@ -1,5 +1,9 @@
-import jakarta.jms.*;
+import javax.jms.*;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.cli.commands.ActionContext;
+import org.apache.activemq.artemis.cli.commands.address.CreateAddress;
+import org.apache.activemq.artemis.cli.commands.queue.CreateQueue;
+import org.apache.activemq.artemis.cli.commands.queue.StatQueue;
 import org.apache.activemq.artemis.core.config.ClusterConnectionConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -17,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class NoTopologyRedistributionTest extends ActiveMQTestBase implements MessageListener{
+public class ConsumerAfterTopologyPass extends ActiveMQTestBase implements MessageListener{
 
 
    ActiveMQServer server1;
@@ -62,7 +66,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
               setName("my-cluster").setAddress(address).setConnectorName("local").
               setInitialConnectAttempts(10).
               setRetryInterval(100).setDuplicateDetection(true).setMaxHops(1).
-              setProducerWindowSize(0).setMessageLoadBalancingType(MessageLoadBalancingType.ON_DEMAND).
+              setMessageLoadBalancingType(MessageLoadBalancingType.ON_DEMAND).
               setStaticConnectors(List.of("remote"));
 
 
@@ -85,6 +89,7 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
       server1.getConfiguration().setClusterPassword("admin");
       server1.start();
 
+      createQueue("tcp://localhost:61616");
 
       ConfigurationImpl config2 =  createBasicConfig(0);
       config2.getConnectorConfigurations().put("remote", new TransportConfiguration(NETTY_CONNECTOR_FACTORY,map));
@@ -100,14 +105,16 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
       server2.start();
 
 
-      Thread.sleep(4000);
+
+      createQueue("tcp://localhost:61617");
+
+      Thread.sleep(1000);
       ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
       Connection connection = activeMQConnectionFactory.createConnection();
       connection.start();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
       System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
-
 
 
       ConnectionFactory factory1 = CFUtil.createConnectionFactory("core", "tcp://localhost:61617");
@@ -134,5 +141,28 @@ public class NoTopologyRedistributionTest extends ActiveMQTestBase implements Me
    public void onMessage(Message message) {
       System.out.println(">> Async Consumer Received The Message >> "+message);
       countDownLatch.countDown();
+   }
+
+   private void createQueue(String url) throws Exception {
+      ActionContext actionContext = new ActionContext();
+
+      CreateAddress createAddress = new CreateAddress();
+      createAddress.setAnycast(true);
+      createAddress.setName(address);
+      createAddress.setBrokerURL(url);
+      createAddress.execute(actionContext);
+
+      CreateQueue createQueue = new CreateQueue();
+      createQueue.setAddress(address);
+      createQueue.setName(queue);
+      createQueue.setAnycast(true);
+      createQueue.setPreserveOnNoConsumers(true);
+      createQueue.setBrokerURL(url);
+      createQueue.execute(actionContext);
+
+      StatQueue statQueue = new StatQueue();
+      statQueue.setBrokerURL(url);
+      statQueue.setQueueName(queue);
+      statQueue.execute(actionContext);
    }
 }
