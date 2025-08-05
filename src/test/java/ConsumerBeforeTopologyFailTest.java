@@ -128,8 +128,8 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       stats(url2);
 
 
-     ActiveMQConnectionFactory factoryBroker2 = new ActiveMQConnectionFactory(url2);
-         Connection connectionBroker2 = factoryBroker2.createConnection();
+           ActiveMQConnectionFactory factoryBroker2 = new ActiveMQConnectionFactory(url2);
+           Connection connectionBroker2 = factoryBroker2.createConnection();
            connectionBroker2.start();
            Session sessionBroker2 = connectionBroker2.createSession(false, Session.AUTO_ACKNOWLEDGE);
            Destination jmsQueue = sessionBroker2.createQueue(fqqn);
@@ -142,7 +142,7 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
 
       Thread.sleep(5000);
       //TODO if you uncomment the following line, the async consumer will receive the message
-     // System.out.println(session.createConsumer(session.createQueue(fqqn)).receive(1));
+     // System.out.println(sessionBroker1.createConsumer(sessionBroker1.createQueue(fqqn)).receive(1));
       boolean result = countDownLatch.await(5, TimeUnit.SECONDS);
       assertTrue(result);
       server1.stop();

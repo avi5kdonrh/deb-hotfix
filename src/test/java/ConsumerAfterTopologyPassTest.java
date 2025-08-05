@@ -117,24 +117,27 @@ public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements M
       stats(url2);
 
       Thread.sleep(1000);
-      ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(url1);
-      Connection connection = activeMQConnectionFactory.createConnection();
-      connection.start();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
+
+      ActiveMQConnectionFactory factoryBroker1 = new ActiveMQConnectionFactory(url1);
+      Connection connectionBroker1 = factoryBroker1.createConnection();
+      connectionBroker1.start();
+      Session sessionBroker1 = connectionBroker1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      sessionBroker1.createConsumer(sessionBroker1.createQueue(fqqn)).setMessageListener(this);
+
       System.out.println("\n>>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
 
       System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING CONSUMER ON BROKER1 >>>");
       stats(url1);
 
-      ConnectionFactory factory1 = CFUtil.createConnectionFactory("core", url2);
-      try (Connection connection1 = factory1.createConnection()) {
-         connection1.start();
-         Session session1= connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Destination jmsQueue = session1.createQueue(fqqn);
-         session1.createProducer(jmsQueue).send(session1.createTextMessage("test"));
-         System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
-      }
+         ActiveMQConnectionFactory factoryBroker2 = new ActiveMQConnectionFactory(url2);
+         Connection connectionBroker2 = factoryBroker2.createConnection();
+         connectionBroker2.start();
+         Session sessionBroker2 = connectionBroker2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Destination jmsQueue = sessionBroker2.createQueue(fqqn);
+         sessionBroker2.createProducer(jmsQueue).send(sessionBroker2.createTextMessage("test"));
+
+      System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
+
       System.out.println("\n\n>>>> QUEUE STAT AFTER SENDING MESSAGE ON BROKER2 >>>");
       stats(url2);
       Thread.sleep(1000);
