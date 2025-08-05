@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class ConsumerBeforeTopologyFail extends ActiveMQTestBase implements MessageListener{
+public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements MessageListener{
 
 
    ActiveMQServer server1;
@@ -91,14 +91,6 @@ public class ConsumerBeforeTopologyFail extends ActiveMQTestBase implements Mess
 
       createQueue("tcp://localhost:61616");
 
-      Thread.sleep(1000);
-      ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-      Connection connection = activeMQConnectionFactory.createConnection();
-      connection.start();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
-      System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
-
       ConfigurationImpl config2 =  createBasicConfig(0);
       config2.getConnectorConfigurations().put("remote", new TransportConfiguration(NETTY_CONNECTOR_FACTORY,map));
       config2.getConnectorConfigurations().put("local", new TransportConfiguration(NETTY_CONNECTOR_FACTORY,map2));
@@ -112,7 +104,18 @@ public class ConsumerBeforeTopologyFail extends ActiveMQTestBase implements Mess
       server2.getConfiguration().setClusterPassword("admin");
       server2.start();
 
+
+
       createQueue("tcp://localhost:61617");
+
+      Thread.sleep(1000);
+      ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+      Connection connection = activeMQConnectionFactory.createConnection();
+      connection.start();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
+      System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
+
 
       ConnectionFactory factory1 = CFUtil.createConnectionFactory("core", "tcp://localhost:61617");
       try (Connection connection1 = factory1.createConnection()) {
