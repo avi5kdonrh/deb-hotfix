@@ -170,6 +170,7 @@ public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements M
               .execute("queue", "stat", "--url="+url,
                       "--clustered",
                       "--queueName="+queue);
+      System.out.println("\n");
    }
 
 }

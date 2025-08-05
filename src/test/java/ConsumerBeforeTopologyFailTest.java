@@ -173,6 +173,7 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
               .execute("queue", "stat", "--url="+url,
                       "--clustered",
                       "--queueName="+queue);
+      System.out.println("\n");
    }
 
 }
