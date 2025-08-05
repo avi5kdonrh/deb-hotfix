@@ -113,7 +113,7 @@ public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements M
 
 
       createQueue(url2);
-      System.out.println(">>>> QUEUE STAT AFTER CREATING QUEUE ON BROKER2 >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING QUEUE ON BROKER2 >>>");
       stats(url2);
 
       Thread.sleep(1000);
@@ -122,9 +122,9 @@ public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements M
       connection.start();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       session.createConsumer(session.createQueue(fqqn)).setMessageListener(this);
-      System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
+      System.out.println("\n>>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
 
-      System.out.println(">>>> QUEUE STAT AFTER CREATING CONSUMER ON BROKER1 >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING CONSUMER ON BROKER1 >>>");
       stats(url1);
 
       ConnectionFactory factory1 = CFUtil.createConnectionFactory("core", url2);
@@ -135,7 +135,7 @@ public class ConsumerAfterTopologyPassTest extends ActiveMQTestBase implements M
          session1.createProducer(jmsQueue).send(session1.createTextMessage("test"));
          System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
       }
-      System.out.println(">>>> QUEUE STAT AFTER SENDING MESSAGE ON BROKER2 >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER SENDING MESSAGE ON BROKER2 >>>");
       stats(url2);
       Thread.sleep(1000);
       //TODO if you uncomment the following line, the async consumer will receive the message

@@ -94,7 +94,7 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       server1.start();
 
       createQueue(url1);
-      System.out.println(">>>> QUEUE STAT AFTER CREATING QUEUE >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING QUEUE >>>");
       stats(url1);
 
       Thread.sleep(1000);
@@ -106,8 +106,8 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
          sessionBroker1.createConsumer(sessionBroker1.createQueue(fqqn)).setMessageListener(this);
 
 
-      System.out.println(">>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
-      System.out.println(">>>> QUEUE STAT AFTER CREATING ASYNC CONSUMER >>>");
+      System.out.println("\n>>>>>>>>>>>>>> Consumer Created >>>>>>>>>>>>>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING ASYNC CONSUMER >>>");
       stats(url1);
 
       ConfigurationImpl config2 =  createBasicConfig(0);
@@ -124,7 +124,7 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
       server2.start();
 
       createQueue(url2);
-      System.out.println(">>>> QUEUE STAT AFTER CREATING QUEUE ON ANOTHER NODE >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER CREATING QUEUE ON ANOTHER NODE >>>");
       stats(url2);
 
 
@@ -136,7 +136,7 @@ public class ConsumerBeforeTopologyFailTest extends ActiveMQTestBase implements 
            sessionBroker2.createProducer(jmsQueue).send(sessionBroker2.createTextMessage("test"));
            System.out.println(">> SENT >>>>>>>>>>>>>>>>>>>");
 
-      System.out.println(">>>> QUEUE STAT AFTER SENDING MESSAGE ON ANOTHER NODE >>>");
+      System.out.println("\n\n>>>> QUEUE STAT AFTER SENDING MESSAGE ON ANOTHER NODE >>>");
      stats(url2);
 
 
